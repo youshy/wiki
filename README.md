@@ -12,6 +12,8 @@ So, I wrote a small Wiki fetcher - whenever I need to know something fast, I can
 
 * `go build`
 
+Or - forget these two steps and just use the binary in the repo and
+
 * Run the file with string which you want to wiki: `./wiki "tom morello"`
 
 ## What to do next?
