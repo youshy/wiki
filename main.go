@@ -1,29 +1,74 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
+	"time"
 )
 
 const wikiAddress = "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro&explaintext&redirects=1&titles="
 
 const address = "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro&explaintext&redirects=1&titles=Stack%20Overflow"
 
-type Data struct {
-	Batchcomplete string
-	Query         struct {
-		Pages struct {
-			Number struct {
-				Pageid  int
-				Ns      int
-				Title   string
-				Extract string
-			}
-		}
+// Taken from amazing sadbox/mediawiki
+// Response is a struct used for unmarshaling the MediaWiki JSON response.
+type Response struct {
+	Query struct {
+		// The JSON response for this part of the struct is dumb.
+		// It will return something like { '23': { 'pageid': 23 ...
+		//
+		// As a workaround you can use PageSlice which will create
+		// a list of pages from the map.
+		Pages map[string]Page
+	}
+}
+
+// PageSlice generates a slice from Pages to work around the sillyness in
+// the MediaWiki API.
+func (r *Response) PageSlice() []Page {
+	pl := []Page{}
+	for _, page := range r.Query.Pages {
+		pl = append(pl, page)
+	}
+	return pl
+}
+
+// A Page represents a MediaWiki page and its metadata.
+type Page struct {
+	Pageid    int
+	Ns        int
+	Title     string
+	Touched   string
+	Lastrevid int
+	// Mediawiki will return '' for zero, this makes me sad.
+	// If for some reason you need this value you'll have to
+	// do some type assertion sillyness.
+	Counter   interface{}
+	Length    int
+	Edittoken string
+	Revisions []struct {
+		Revid         int       `json:"revid"`
+		Parentid      int       `json:"parentid"`
+		Minor         string    `json:"minor"`
+		User          string    `json:"user"`
+		Userid        int       `json:"userid"`
+		Timestamp     time.Time `json:"timestamp"`
+		Size          int       `json:"size"`
+		Sha1          string    `json:"sha1"`
+		ContentModel  string    `json:"contentmodel"`
+		Comment       string    `json:"comment"`
+		ParsedComment string    `json:"parsedcomment"`
+		ContentFormat string    `json:"contentformat"`
+		Body          string    `json:"*"` // Take note, MediaWiki literally returns { '*':
+	}
+	Imageinfo []struct {
+		Url            string
+		Descriptionurl string
 	}
 }
 
@@ -34,12 +79,9 @@ func main() {
 	}
 
 	arguments := os.Args
-	person := arguments[1]
-	fmt.Println(person)
+	person := strings.Replace(arguments[1], " ", "%20", -1)
 
-	// url := wikiAddress + person
-	url := address
-	fmt.Println(url)
+	url := wikiAddress + person
 
 	res, err := http.Get(url)
 
@@ -54,12 +96,22 @@ func main() {
 		log.Fatal(readErr)
 	}
 
-	fmt.Println(string(body))
+	bodyToString := string(body)
 
-	var output Data
-	json.Unmarshal(body, &output)
+	re := regexp.MustCompile(`\b(\w*extract\w*)\b`)
 
-	fmt.Println(output.Query)
-	fmt.Println("%+v \n", output)
-	fmt.Println("%+v \n", output.Query.Pages.Number.Extract)
+	result := re.Split(bodyToString, -1)
+
+	fmt.Println(result[1])
+
+	// fmt.Println(strings.TrimLeft(bodyToString, "extract"))
+
+	// this will return the JSON
+	// needs a lot of work
+	// var response Response
+	// err = json.Unmarshal(body, &response)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// pl := response.PageSlice()
 }
