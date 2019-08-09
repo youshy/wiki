@@ -16,6 +16,10 @@ Or - forget these two steps and just use the binary in the repo and
 
 * Run the file with string which you want to wiki: `./wiki "tom morello"`
 
+The result is the small summary of the question.
+
 ## What to do next?
 
-Definitely it needs a lot of TLC. There's a lot of things wrong here but - I'll get there!
+Well, probably, I need to check if there's any redirects and maybe do some help when you Wiki some badly written stuff.
+
+I'm actually super stoked about this app!
