@@ -49,5 +49,6 @@ func main() {
 
 	response := GetWiki(url)
 
-	fmt.Println(response)
+	fmt.Println("Searching for " + arguments[1] + "\n")
+	fmt.Println(response[0].Extract)
 }
