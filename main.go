@@ -42,13 +42,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	arguments := os.Args
-	person := strings.Replace(arguments[1], " ", "%20", -1)
+	arguments := os.Args[1:]
+	person := strings.Replace(arguments[0], " ", "%20", -1)
 
 	url := wikiAddress + person
 
 	response := GetWiki(url)
 
-	fmt.Println("Searching for " + arguments[1] + "\n")
+	fmt.Println("Searching for " + arguments[0] + "\n")
 	fmt.Println(response[0].Extract)
+
 }
