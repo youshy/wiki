@@ -23,3 +23,5 @@ The result is the small summary of the question.
 Well, probably, I need to check if there's any redirects and maybe do some help when you Wiki some badly written stuff.
 
 I'm actually super stoked about this app!
+
+**IDEA:** Use as proper, nice **CLI** - type whatever you need, then ask the user to show either result in the terminal or in a new VIM session.
